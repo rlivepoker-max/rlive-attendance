@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R-LIVE Staff Attendance</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#111;--muted:#6b7280;--line:#e5e7eb}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--ink)}
+.wrap{max-width:720px;margin:auto;padding:18px}.hero{background:#111;color:#fff;padding:24px;border-radius:20px;margin-bottom:14px}
+.hero h1{font-size:24px;margin:0 0 5px}.hero p{margin:0;color:#d1d5db}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px}
+h2{font-size:20px;margin:0 0 14px}label{display:block;font-size:13px;color:var(--muted);margin-top:10px}
+select,input,button{width:100%;padding:14px;margin-top:6px;border-radius:11px;border:1px solid #cfd3d8;font-size:16px}
+button{background:#111;color:#fff;border:0;font-weight:700;cursor:pointer}.secondary{background:#fff;color:#111;border:1px solid #111}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hide{display:none}.msg{margin-top:12px;font-size:14px}
+.ok{color:#067647}.bad{color:#b42318}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#eee;font-size:12px;font-weight:700}
+.small{font-size:12px;color:var(--muted);line-height:1.5}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero"><h1>R-LIVE STAFF ATTENDANCE</h1><p>Newport · Manila</p></div>
+
+  <section id="loginCard" class="card">
+    <h2>Staff Login</h2>
+    <label>Name</label>
+    <select id="name">
+      <option>JUSTINE</option><option>JENNY</option><option>KIM</option>
+      <option>JEWELL</option><option>SHY</option><option>CESS</option><option>ADMIN</option>
+    </select>
+    <label>PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN">
+    <button id="loginBtn">LOGIN</button>
+    <div id="loginMsg" class="msg"></div>
+  </section>
+
+  <section id="staffCard" class="card hide">
+    <h2 id="hello"></h2>
+    <div id="clock" class="small"></div>
+    <p>Today's shift: <span id="shift" class="pill">Not assigned</span></p>
+    <div class="grid"><button id="inBtn">CLOCK IN</button><button id="outBtn">CLOCK OUT</button></div>
+    <div id="staffMsg" class="msg"></div>
+    <button class="secondary" onclick="logout()">LOG OUT</button>
+  </section>
+
+  <section id="adminCard" class="card hide">
+    <h2>Admin</h2>
+    <p class="small">The interface is ready for schedule and attendance management. The online database connection is the next setup step.</p>
+    <button class="secondary" onclick="logout()">LOG OUT</button>
+  </section>
+
+  <section class="card"><div class="small"><b>R-LIVE Poker Club</b><br>Attendance records use Manila time once the database connection is enabled.</div></section>
+</div>
+<script>
+const demoPins={JUSTINE:"1101",JENNY:"1102",KIM:"1103",JEWELL:"1104",SHY:"1105",CESS:"1106",ADMIN:"2580"};
+const $=id=>document.getElementById(id);
+function manilaNow(){return new Intl.DateTimeFormat("en-PH",{timeZone:"Asia/Manila",dateStyle:"full",timeStyle:"medium"}).format(new Date())}
+setInterval(()=>{if($("clock"))$("clock").textContent="Manila time · "+manilaNow()},1000);
+$("loginBtn").onclick=()=>{
+ const n=$("name").value,p=$("pin").value;
+ if(demoPins[n]!==p){$("loginMsg").className="msg bad";$("loginMsg").textContent="Incorrect PIN.";return}
+ $("loginCard").classList.add("hide");$("loginMsg").textContent="";
+ if(n==="ADMIN"){$("adminCard").classList.remove("hide")}else{$("staffCard").classList.remove("hide");$("hello").textContent="Welcome, "+n;$("clock").textContent="Manila time · "+manilaNow()}
+};
+$("inBtn").onclick=()=>{$("staffMsg").className="msg ok";$("staffMsg").textContent="CLOCK IN button is working. Database connection will be enabled next."};
+$("outBtn").onclick=()=>{$("staffMsg").className="msg ok";$("staffMsg").textContent="CLOCK OUT button is working. Database connection will be enabled next."};
+function logout(){$("staffCard").classList.add("hide");$("adminCard").classList.add("hide");$("loginCard").classList.remove("hide");$("pin").value=""}
+</script>
+</body>
+</html>
