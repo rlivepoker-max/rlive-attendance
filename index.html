@@ -9,56 +9,86 @@
 h1{font-size:25px;margin:0 0 8px}.muted{color:#9ca3af}.card{background:#1d1d1e;border:1px solid #555;border-radius:22px;padding:22px;margin-bottom:16px}
 h2{margin-top:0}label{display:block;color:#bbb;margin:14px 0 6px}select,input,button{width:100%;padding:15px;border-radius:13px;font-size:16px}
 select,input{background:#333;color:#fff;border:1px solid #555}button{border:0;background:#f5f5f5;color:#111;font-weight:800;margin-top:12px;cursor:pointer}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.secondary{background:#333;color:#fff}.hide{display:none}
-.msg{margin-top:14px;line-height:1.5}.ok{color:#75d69c}.bad{color:#ff8b8b}.time{font-size:14px;color:#aaa;margin:8px 0 18px}
+button:disabled{opacity:.55;cursor:wait}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.secondary{background:#333;color:#fff}
+.hide{display:none}.msg{margin-top:14px;line-height:1.5}.ok{color:#75d69c}.bad{color:#ff8b8b}.time{font-size:14px;color:#aaa;margin:8px 0 18px}
 @media(max-width:520px){.grid{grid-template-columns:1fr}}
 </style></head>
 <body><div class="wrap">
 <div class="hero"><h1>R-LIVE STAFF<br>ATTENDANCE</h1><div class="muted">Newport · Manila</div></div>
-
 <div id="login" class="card">
 <h2>Staff Login</h2>
 <label>Name</label><select id="name"><option>JUSTINE</option><option>JENNY</option><option>KIM</option><option>JEWELL</option><option>SHY</option><option>CESS</option><option>ADMIN</option></select>
 <label>PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN">
 <button id="loginBtn">LOGIN</button><div id="loginMsg" class="msg"></div>
 </div>
-
 <div id="staff" class="card hide">
 <h2 id="hello"></h2><div id="clock" class="time"></div>
 <div class="grid"><button id="inBtn">CLOCK IN</button><button id="outBtn">CLOCK OUT</button></div>
 <div id="staffMsg" class="msg"></div><button class="secondary" id="logoutBtn">LOG OUT</button>
 </div>
-
 <div id="admin" class="card hide">
 <h2>ADMIN</h2><p class="muted">Admin login is connected. Schedule/report screen will be added after attendance recording is verified.</p>
 <button class="secondary" id="adminLogout">LOG OUT</button>
-</div>
-</div>
+</div></div>
 <script>
-const API='https://script.google.com/macros/s/AKfycbzHTDeFKPRCZB3bkwCDXc4qyvY5ziUyU-WLTv1ZHua2Tpie6HYfTKYJne0MNy5np-5m/exec'; let user=null,pin=null;
-const $=x=>document.getElementById(x);
-function qs(obj){return new URLSearchParams(obj).toString()}
-async function callApi(data){
-  const r=await fetch(API+"?"+qs(data),{method:"GET",redirect:"follow"});
-  const t=await r.text();
-  try{return JSON.parse(t)}catch(e){throw new Error("Server response error. Please try again.")}
-}
+const API='https://script.google.com/macros/s/AKfycbzHTDeFKPRCZB3bkwCDXc4qyvY5ziUyU-WLTv1ZHua2Tpie6HYfTKYJne0MNy5np-5m/exec';
+let user=null,pin=null,seq=0;
+
+function $(x){return document.getElementById(x)}
 function manila(){return new Intl.DateTimeFormat("en-PH",{timeZone:"Asia/Manila",dateStyle:"full",timeStyle:"medium"}).format(new Date())}
-setInterval(()=>{if(!$("staff").classList.contains("hide"))$("clock").textContent="Manila time · "+manila()},1000);
-$("loginBtn").onclick=async()=>{
- const n=$("name").value,p=$("pin").value.trim(); $("loginMsg").className="msg"; $("loginMsg").textContent="Checking...";
- try{const x=await callApi({action:"login",name:n,pin:p});if(!x.ok)throw new Error(x.message||"Login failed.");
- user=n;pin=p;$("login").classList.add("hide");$("loginMsg").textContent="";
- if(x.role==="admin")$("admin").classList.remove("hide");else{$("staff").classList.remove("hide");$("hello").textContent="Welcome, "+n;$("clock").textContent="Manila time · "+manila()}
- }catch(e){$("loginMsg").className="msg bad";$("loginMsg").textContent=e.message}
-};
-async function punch(action){
- $("staffMsg").className="msg";$("staffMsg").textContent="Saving...";
- try{const x=await callApi({action:action,name:user,pin:pin});if(!x.ok)throw new Error(x.message||"Could not save.");
- $("staffMsg").className="msg ok";$("staffMsg").textContent=x.message+" "+(x.time||"");
- }catch(e){$("staffMsg").className="msg bad";$("staffMsg").textContent=e.message}
+
+function callApi(data){
+  return new Promise((resolve,reject)=>{
+    const callback="rliveCb_"+Date.now()+"_"+(++seq);
+    const timer=setTimeout(()=>cleanup(new Error("Server timeout. Please try again.")),15000);
+    const script=document.createElement("script");
+    function cleanup(err,result){
+      clearTimeout(timer);
+      try{delete window[callback]}catch(e){}
+      if(script.parentNode) script.parentNode.removeChild(script);
+      if(err) reject(err); else resolve(result);
+    }
+    window[callback]=(result)=>cleanup(null,result);
+    script.onerror=()=>cleanup(new Error("Could not connect to server."));
+    const params=new URLSearchParams({...data,callback});
+    script.src=API+"?"+params.toString()+"&_="+Date.now();
+    document.body.appendChild(script);
+  });
 }
-$("inBtn").onclick=()=>punch("clockin");$("outBtn").onclick=()=>punch("clockout");
-function logout(){user=null;pin=null;$("pin").value="";$("staff").classList.add("hide");$("admin").classList.add("hide");$("login").classList.remove("hide");$("staffMsg").textContent=""}
+
+setInterval(()=>{if(!$("staff").classList.contains("hide"))$("clock").textContent="Manila time · "+manila()},1000);
+
+$("loginBtn").onclick=async()=>{
+ const n=$("name").value,p=$("pin").value.trim();
+ if(!p){$("loginMsg").className="msg bad";$("loginMsg").textContent="Please enter your PIN.";return}
+ $("loginBtn").disabled=true;$("loginMsg").className="msg";$("loginMsg").textContent="Checking...";
+ try{
+   const x=await callApi({action:"login",name:n,pin:p});
+   if(!x.ok) throw new Error(x.message||"Login failed.");
+   user=n;pin=p;$("login").classList.add("hide");$("loginMsg").textContent="";
+   if(x.role==="admin") $("admin").classList.remove("hide");
+   else {$("staff").classList.remove("hide");$("hello").textContent="Welcome, "+n;$("clock").textContent="Manila time · "+manila()}
+ }catch(e){$("loginMsg").className="msg bad";$("loginMsg").textContent=e.message}
+ finally{$("loginBtn").disabled=false}
+};
+
+async function punch(action){
+ $("inBtn").disabled=true;$("outBtn").disabled=true;
+ $("staffMsg").className="msg";$("staffMsg").textContent="Saving...";
+ try{
+   const x=await callApi({action,name:user,pin});
+   if(!x.ok) throw new Error(x.message||"Could not save.");
+   $("staffMsg").className="msg ok";$("staffMsg").textContent=x.message+" "+(x.time||"");
+ }catch(e){$("staffMsg").className="msg bad";$("staffMsg").textContent=e.message}
+ finally{$("inBtn").disabled=false;$("outBtn").disabled=false}
+}
+$("inBtn").onclick=()=>punch("clockin");
+$("outBtn").onclick=()=>punch("clockout");
+
+function logout(){
+ user=null;pin=null;$("pin").value="";
+ $("staff").classList.add("hide");$("admin").classList.add("hide");$("login").classList.remove("hide");
+ $("staffMsg").textContent="";
+}
 $("logoutBtn").onclick=logout;$("adminLogout").onclick=logout;
 </script></body></html>
