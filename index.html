@@ -58,47 +58,42 @@ function manilaTime() {
 function apiCall(params) {
   return new Promise(function(resolve, reject) {
     requestNo++;
+
     var callbackName = "rliveCallback" + requestNo;
     var script = document.createElement("script");
-    var finished = false;
 
     window[callbackName] = function(data) {
-      if (finished) return;
-      finished = true;
-      clearTimeout(timer);
-      delete window[callbackName];
-      script.remove();
       resolve(data);
+
+      setTimeout(function() {
+        try {
+          delete window[callbackName];
+          script.remove();
+        } catch(e) {}
+      }, 1000);
     };
 
     var parts = [];
+
     Object.keys(params).forEach(function(key) {
-      parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(params[key]));
+      parts.push(
+        encodeURIComponent(key) + "=" +
+        encodeURIComponent(params[key])
+      );
     });
+
     parts.push("callback=" + callbackName);
 
     script.src = API + "?" + parts.join("&");
     script.async = true;
+
     script.onerror = function() {
-      if (finished) return;
-      finished = true;
-      clearTimeout(timer);
-      delete window[callbackName];
-      script.remove();
       reject(new Error("Could not connect to server."));
     };
-    document.head.appendChild(script);
 
-    var timer = setTimeout(function() {
-      if (finished) return;
-      finished = true;
-      delete window[callbackName];
-      script.remove();
-      reject(new Error("Server timeout. Please try again."));
-    }, 20000);
+    document.head.appendChild(script);
   });
 }
-
 setInterval(function() {
   if (!el("staff").classList.contains("hide")) {
     el("clock").textContent = "Manila time · " + manilaTime();
