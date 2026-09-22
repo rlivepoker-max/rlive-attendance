@@ -1,94 +1,174 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>R-LIVE Staff Attendance</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#101112;color:#fff;font-family:Arial,sans-serif}
-.wrap{max-width:720px;margin:auto;padding:18px}.hero{background:#050505;padding:28px;border-radius:24px;margin-bottom:18px}
-h1{font-size:25px;margin:0 0 8px}.muted{color:#9ca3af}.card{background:#1d1d1e;border:1px solid #555;border-radius:22px;padding:22px;margin-bottom:16px}
-h2{margin-top:0}label{display:block;color:#bbb;margin:14px 0 6px}select,input,button{width:100%;padding:15px;border-radius:13px;font-size:16px}
-select,input{background:#333;color:#fff;border:1px solid #555}button{border:0;background:#f5f5f5;color:#111;font-weight:800;margin-top:12px;cursor:pointer}
-button:disabled{opacity:.55;cursor:wait}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.secondary{background:#333;color:#fff}
-.hide{display:none}.msg{margin-top:14px;line-height:1.5}.ok{color:#75d69c}.bad{color:#ff8b8b}.time{font-size:14px;color:#aaa;margin:8px 0 18px}
+*{box-sizing:border-box} body{margin:0;background:#101112;color:#fff;font-family:Arial,sans-serif}
+.wrap{max-width:720px;margin:auto;padding:18px} .hero{background:#050505;padding:28px;border-radius:24px;margin-bottom:18px}
+h1{font-size:25px;margin:0 0 8px} .muted{color:#9ca3af} .card{background:#1d1d1e;border:1px solid #555;border-radius:22px;padding:22px;margin-bottom:16px}
+h2{margin-top:0} label{display:block;color:#bbb;margin:14px 0 6px} select,input,button{width:100%;padding:15px;border-radius:13px;font-size:16px}
+select,input{background:#333;color:#fff;border:1px solid #555} button{border:0;background:#f5f5f5;color:#111;font-weight:800;margin-top:12px;cursor:pointer}
+button:disabled{opacity:.55} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px} .secondary{background:#333;color:#fff}
+.hide{display:none} .msg{margin-top:14px;line-height:1.5} .ok{color:#75d69c} .bad{color:#ff8b8b} .time{font-size:14px;color:#aaa;margin:8px 0 18px}
 @media(max-width:520px){.grid{grid-template-columns:1fr}}
-</style></head>
-<body><div class="wrap">
+</style>
+</head>
+<body>
+<div class="wrap">
 <div class="hero"><h1>R-LIVE STAFF<br>ATTENDANCE</h1><div class="muted">Newport · Manila</div></div>
+
 <div id="login" class="card">
 <h2>Staff Login</h2>
-<label>Name</label><select id="name"><option>JUSTINE</option><option>JENNY</option><option>KIM</option><option>JEWELL</option><option>SHY</option><option>CESS</option><option>ADMIN</option></select>
-<label>PIN</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN">
-<button id="loginBtn">LOGIN</button><div id="loginMsg" class="msg"></div>
+<label>Name</label>
+<select id="name"><option>JUSTINE</option><option>JENNY</option><option>KIM</option><option>JEWELL</option><option>SHY</option><option>CESS</option><option>ADMIN</option></select>
+<label>PIN</label>
+<input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN">
+<button id="loginBtn">LOGIN</button>
+<div id="loginMsg" class="msg"></div>
 </div>
+
 <div id="staff" class="card hide">
-<h2 id="hello"></h2><div id="clock" class="time"></div>
+<h2 id="hello"></h2>
+<div id="clock" class="time"></div>
 <div class="grid"><button id="inBtn">CLOCK IN</button><button id="outBtn">CLOCK OUT</button></div>
-<div id="staffMsg" class="msg"></div><button class="secondary" id="logoutBtn">LOG OUT</button>
+<div id="staffMsg" class="msg"></div>
+<button class="secondary" id="logoutBtn">LOG OUT</button>
 </div>
+
 <div id="admin" class="card hide">
-<h2>ADMIN</h2><p class="muted">Admin login is connected. Schedule/report screen will be added after attendance recording is verified.</p>
+<h2>ADMIN</h2>
+<p class="muted">Admin login connected.</p>
 <button class="secondary" id="adminLogout">LOG OUT</button>
-</div></div>
+</div>
+</div>
+
 <script>
-const API='https://script.google.com/macros/s/AKfycbzHTDeFKPRCZB3bkwCDXc4qyvY5ziUyU-WLTv1ZHua2Tpie6HYfTKYJne0MNy5np-5m/exec';
-let user=null,pin=null,seq=0;
+const API = "https://script.google.com/macros/s/AKfycbzHTDeFKPRCZB3bkwCDXc4qyvY5ziUyU-WLTv1ZHua2Tpie6HYfTKYJne0MNy5np-5m/exec";
+let user = "", pin = "", requestNo = 0;
 
-function $(x){return document.getElementById(x)}
-function manila(){return new Intl.DateTimeFormat("en-PH",{timeZone:"Asia/Manila",dateStyle:"full",timeStyle:"medium"}).format(new Date())}
+function el(id) { return document.getElementById(id); }
+function manilaTime() {
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone:"Asia/Manila", dateStyle:"full", timeStyle:"medium"
+  }).format(new Date());
+}
 
-function callApi(data){
-  return new Promise((resolve,reject)=>{
-    const callback="rliveCb_"+Date.now()+"_"+(++seq);
-    const timer=setTimeout(()=>cleanup(new Error("Server timeout. Please try again.")),15000);
-    const script=document.createElement("script");
-    function cleanup(err,result){
+function apiCall(params) {
+  return new Promise(function(resolve, reject) {
+    requestNo++;
+    var callbackName = "rliveCallback" + requestNo;
+    var script = document.createElement("script");
+    var finished = false;
+
+    window[callbackName] = function(data) {
+      if (finished) return;
+      finished = true;
       clearTimeout(timer);
-      try{delete window[callback]}catch(e){}
-      if(script.parentNode) script.parentNode.removeChild(script);
-      if(err) reject(err); else resolve(result);
-    }
-    window[callback]=(result)=>cleanup(null,result);
-    script.onerror=()=>cleanup(new Error("Could not connect to server."));
-    const params=new URLSearchParams({...data,callback});
-    script.src=API+"?"+params.toString()+"&_="+Date.now();
-    document.body.appendChild(script);
+      delete window[callbackName];
+      script.remove();
+      resolve(data);
+    };
+
+    var parts = [];
+    Object.keys(params).forEach(function(key) {
+      parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(params[key]));
+    });
+    parts.push("callback=" + callbackName);
+
+    script.src = API + "?" + parts.join("&");
+    script.async = true;
+    script.onerror = function() {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      delete window[callbackName];
+      script.remove();
+      reject(new Error("Could not connect to server."));
+    };
+    document.head.appendChild(script);
+
+    var timer = setTimeout(function() {
+      if (finished) return;
+      finished = true;
+      delete window[callbackName];
+      script.remove();
+      reject(new Error("Server timeout. Please try again."));
+    }, 20000);
   });
 }
 
-setInterval(()=>{if(!$("staff").classList.contains("hide"))$("clock").textContent="Manila time · "+manila()},1000);
+setInterval(function() {
+  if (!el("staff").classList.contains("hide")) {
+    el("clock").textContent = "Manila time · " + manilaTime();
+  }
+}, 1000);
 
-$("loginBtn").onclick=async()=>{
- const n=$("name").value,p=$("pin").value.trim();
- if(!p){$("loginMsg").className="msg bad";$("loginMsg").textContent="Please enter your PIN.";return}
- $("loginBtn").disabled=true;$("loginMsg").className="msg";$("loginMsg").textContent="Checking...";
- try{
-   const x=await callApi({action:"login",name:n,pin:p});
-   if(!x.ok) throw new Error(x.message||"Login failed.");
-   user=n;pin=p;$("login").classList.add("hide");$("loginMsg").textContent="";
-   if(x.role==="admin") $("admin").classList.remove("hide");
-   else {$("staff").classList.remove("hide");$("hello").textContent="Welcome, "+n;$("clock").textContent="Manila time · "+manila()}
- }catch(e){$("loginMsg").className="msg bad";$("loginMsg").textContent=e.message}
- finally{$("loginBtn").disabled=false}
+el("loginBtn").onclick = async function() {
+  var n = el("name").value;
+  var p = el("pin").value.trim();
+  if (!p) {
+    el("loginMsg").className = "msg bad";
+    el("loginMsg").textContent = "Please enter your PIN.";
+    return;
+  }
+  el("loginBtn").disabled = true;
+  el("loginMsg").className = "msg";
+  el("loginMsg").textContent = "Checking...";
+  try {
+    var x = await apiCall({action:"login", name:n, pin:p});
+    if (!x.ok) throw new Error(x.message || "Login failed.");
+    user = n; pin = p;
+    el("login").classList.add("hide");
+    el("loginMsg").textContent = "";
+    if (x.role === "admin") {
+      el("admin").classList.remove("hide");
+    } else {
+      el("staff").classList.remove("hide");
+      el("hello").textContent = "Welcome, " + n;
+      el("clock").textContent = "Manila time · " + manilaTime();
+    }
+  } catch(e) {
+    el("loginMsg").className = "msg bad";
+    el("loginMsg").textContent = e.message;
+  } finally {
+    el("loginBtn").disabled = false;
+  }
 };
 
-async function punch(action){
- $("inBtn").disabled=true;$("outBtn").disabled=true;
- $("staffMsg").className="msg";$("staffMsg").textContent="Saving...";
- try{
-   const x=await callApi({action,name:user,pin});
-   if(!x.ok) throw new Error(x.message||"Could not save.");
-   $("staffMsg").className="msg ok";$("staffMsg").textContent=x.message+" "+(x.time||"");
- }catch(e){$("staffMsg").className="msg bad";$("staffMsg").textContent=e.message}
- finally{$("inBtn").disabled=false;$("outBtn").disabled=false}
+async function punch(action) {
+  el("inBtn").disabled = true;
+  el("outBtn").disabled = true;
+  el("staffMsg").className = "msg";
+  el("staffMsg").textContent = "Saving...";
+  try {
+    var x = await apiCall({action:action, name:user, pin:pin});
+    if (!x.ok) throw new Error(x.message || "Could not save.");
+    el("staffMsg").className = "msg ok";
+    el("staffMsg").textContent = x.message + (x.time ? " " + x.time : "");
+  } catch(e) {
+    el("staffMsg").className = "msg bad";
+    el("staffMsg").textContent = e.message;
+  } finally {
+    el("inBtn").disabled = false;
+    el("outBtn").disabled = false;
+  }
 }
-$("inBtn").onclick=()=>punch("clockin");
-$("outBtn").onclick=()=>punch("clockout");
 
-function logout(){
- user=null;pin=null;$("pin").value="";
- $("staff").classList.add("hide");$("admin").classList.add("hide");$("login").classList.remove("hide");
- $("staffMsg").textContent="";
+el("inBtn").onclick = function() { punch("clockin"); };
+el("outBtn").onclick = function() { punch("clockout"); };
+
+function logout() {
+  user = ""; pin = "";
+  el("pin").value = "";
+  el("staff").classList.add("hide");
+  el("admin").classList.add("hide");
+  el("login").classList.remove("hide");
+  el("staffMsg").textContent = "";
 }
-$("logoutBtn").onclick=logout;$("adminLogout").onclick=logout;
-</script></body></html>
+el("logoutBtn").onclick = logout;
+el("adminLogout").onclick = logout;
+</script>
+</body>
+</html>
