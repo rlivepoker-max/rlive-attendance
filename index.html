@@ -4,166 +4,601 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>R-LIVE Staff Attendance</title>
+
 <style>
-*{box-sizing:border-box} body{margin:0;background:#101112;color:#fff;font-family:Arial,sans-serif}
-.wrap{max-width:720px;margin:auto;padding:18px} .hero{background:#050505;padding:28px;border-radius:24px;margin-bottom:18px}
-h1{font-size:25px;margin:0 0 8px} .muted{color:#9ca3af} .card{background:#1d1d1e;border:1px solid #555;border-radius:22px;padding:22px;margin-bottom:16px}
-h2{margin-top:0} label{display:block;color:#bbb;margin:14px 0 6px} select,input,button{width:100%;padding:15px;border-radius:13px;font-size:16px}
-select,input{background:#333;color:#fff;border:1px solid #555} button{border:0;background:#f5f5f5;color:#111;font-weight:800;margin-top:12px;cursor:pointer}
-button:disabled{opacity:.55} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px} .secondary{background:#333;color:#fff}
-.hide{display:none} .msg{margin-top:14px;line-height:1.5} .ok{color:#75d69c} .bad{color:#ff8b8b} .time{font-size:14px;color:#aaa;margin:8px 0 18px}
-@media(max-width:520px){.grid{grid-template-columns:1fr}}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#101112;
+  color:#fff;
+  font-family:Arial,sans-serif
+}
+
+.wrap{
+  max-width:720px;
+  margin:auto;
+  padding:18px
+}
+
+.hero{
+  background:#050505;
+  padding:28px;
+  border-radius:24px;
+  margin-bottom:18px
+}
+
+h1{
+  font-size:25px;
+  margin:0 0 8px
+}
+
+.muted{color:#9ca3af}
+
+.card{
+  background:#1d1d1e;
+  border:1px solid #555;
+  border-radius:22px;
+  padding:22px;
+  margin-bottom:16px
+}
+
+h2{margin-top:0}
+
+label{
+  display:block;
+  color:#bbb;
+  margin:14px 0 6px
+}
+
+select,input,button{
+  width:100%;
+  padding:15px;
+  border-radius:13px;
+  font-size:16px
+}
+
+select,input{
+  background:#333;
+  color:#fff;
+  border:1px solid #555
+}
+
+button{
+  border:0;
+  background:#f5f5f5;
+  color:#111;
+  font-weight:800;
+  margin-top:12px;
+  cursor:pointer
+}
+
+button:disabled{opacity:.55}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+
+.secondary{
+  background:#333;
+  color:#fff
+}
+
+.hide{display:none}
+
+.msg{
+  margin-top:14px;
+  line-height:1.5
+}
+
+.ok{color:#75d69c}
+.bad{color:#ff8b8b}
+
+.time{
+  font-size:14px;
+  color:#aaa;
+  margin:8px 0 18px
+}
+
+@media(max-width:520px){
+  .grid{grid-template-columns:1fr}
+}
 </style>
 </head>
+
 <body>
+
 <div class="wrap">
-<div class="hero"><h1>R-LIVE STAFF<br>ATTENDANCE</h1><div class="muted">Newport · Manila</div></div>
 
-<div id="login" class="card">
-<h2>Staff Login</h2>
-<label>Name</label>
-<select id="name"><option>JUSTINE</option><option>JENNY</option><option>KIM</option><option>JEWELL</option><option>SHY</option><option>CESS</option><option>ADMIN</option></select>
-<label>PIN</label>
-<input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4-digit PIN">
-<button id="loginBtn">LOGIN</button>
-<div id="loginMsg" class="msg"></div>
+  <div class="hero">
+    <h1>R-LIVE STAFF<br>ATTENDANCE</h1>
+    <div class="muted">Newport · Manila</div>
+  </div>
+
+  <div id="login" class="card">
+    <h2>Staff Login</h2>
+
+    <label>Name</label>
+
+    <select id="name">
+      <option>JUSTINE</option>
+      <option>JENNY</option>
+      <option>KIM</option>
+      <option>JEWELL</option>
+      <option>SHY</option>
+      <option>CESS</option>
+      <option>ADMIN</option>
+    </select>
+
+    <label>PIN</label>
+
+    <input
+      id="pin"
+      type="password"
+      inputmode="numeric"
+      maxlength="4"
+      placeholder="4-digit PIN"
+    >
+
+    <button id="loginBtn">LOGIN</button>
+
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+
+  <div id="staff" class="card hide">
+
+    <h2 id="hello"></h2>
+
+    <div id="clock" class="time"></div>
+
+    <div class="grid">
+      <button id="inBtn">CLOCK IN</button>
+      <button id="outBtn">CLOCK OUT</button>
+    </div>
+
+    <div id="staffMsg" class="msg"></div>
+
+    <button class="secondary" id="logoutBtn">
+      LOG OUT
+    </button>
+
+  </div>
+
+
+  <div id="admin" class="card hide">
+
+    <h2>ADMIN</h2>
+
+    <p class="muted">
+      Admin login connected.
+    </p>
+
+    <button class="secondary" id="adminLogout">
+      LOG OUT
+    </button>
+
+  </div>
+
 </div>
 
-<div id="staff" class="card hide">
-<h2 id="hello"></h2>
-<div id="clock" class="time"></div>
-<div class="grid"><button id="inBtn">CLOCK IN</button><button id="outBtn">CLOCK OUT</button></div>
-<div id="staffMsg" class="msg"></div>
-<button class="secondary" id="logoutBtn">LOG OUT</button>
-</div>
-
-<div id="admin" class="card hide">
-<h2>ADMIN</h2>
-<p class="muted">Admin login connected.</p>
-<button class="secondary" id="adminLogout">LOG OUT</button>
-</div>
-</div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzHTDeFKPRCZB3bkwCDXc4qyvY5ziUyU-WLTv1ZHua2Tpie6HYfTKYJne0MNy5np-5m/exec";
-let user = "", pin = "", requestNo = 0;
 
-function el(id) { return document.getElementById(id); }
-function manilaTime() {
-  return new Intl.DateTimeFormat("en-PH", {
-    timeZone:"Asia/Manila", dateStyle:"full", timeStyle:"medium"
-  }).format(new Date());
+const API =
+"https://script.google.com/macros/s/AKfycbzHTDeFKPRCZB3bkwCDXc4qyvY5ziUyU-WLTv1ZHua2Tpie6HYfTKYJne0MNy5np-5m/exec";
+
+let user = "";
+let pin = "";
+
+let pendingResolve = null;
+let pendingReject = null;
+let pendingScript = null;
+let pendingTimer = null;
+
+
+/* -------------------------
+   BASIC FUNCTIONS
+------------------------- */
+
+function el(id){
+  return document.getElementById(id);
 }
 
-function apiCall(params) {
-  return new Promise(function(resolve, reject) {
-    requestNo++;
 
-    var callbackName = "rliveCallback" + requestNo;
-    var script = document.createElement("script");
+function manilaTime(){
 
-    window[callbackName] = function(data) {
-      resolve(data);
-
-      setTimeout(function() {
-        try {
-          delete window[callbackName];
-          script.remove();
-        } catch(e) {}
-      }, 1000);
-    };
-
-    var parts = [];
-
-    Object.keys(params).forEach(function(key) {
-      parts.push(
-        encodeURIComponent(key) + "=" +
-        encodeURIComponent(params[key])
-      );
-    });
-
-    parts.push("callback=" + callbackName);
-
-    script.src = API + "?" + parts.join("&");
-    script.async = true;
-
-    script.onerror = function() {
-      reject(new Error("Could not connect to server."));
-    };
-
-    document.head.appendChild(script);
-  });
-}
-setInterval(function() {
-  if (!el("staff").classList.contains("hide")) {
-    el("clock").textContent = "Manila time · " + manilaTime();
-  }
-}, 1000);
-
-el("loginBtn").onclick = async function() {
-  var n = el("name").value;
-  var p = el("pin").value.trim();
-  if (!p) {
-    el("loginMsg").className = "msg bad";
-    el("loginMsg").textContent = "Please enter your PIN.";
-    return;
-  }
-  el("loginBtn").disabled = true;
-  el("loginMsg").className = "msg";
-  el("loginMsg").textContent = "Checking...";
-  try {
-    var x = await apiCall({action:"login", name:n, pin:p});
-    if (!x.ok) throw new Error(x.message || "Login failed.");
-    user = n; pin = p;
-    el("login").classList.add("hide");
-    el("loginMsg").textContent = "";
-    if (x.role === "admin") {
-      el("admin").classList.remove("hide");
-    } else {
-      el("staff").classList.remove("hide");
-      el("hello").textContent = "Welcome, " + n;
-      el("clock").textContent = "Manila time · " + manilaTime();
+  return new Intl.DateTimeFormat(
+    "en-PH",
+    {
+      timeZone:"Asia/Manila",
+      dateStyle:"full",
+      timeStyle:"medium"
     }
-  } catch(e) {
-    el("loginMsg").className = "msg bad";
-    el("loginMsg").textContent = e.message;
-  } finally {
-    el("loginBtn").disabled = false;
+  ).format(new Date());
+
+}
+
+
+/* -------------------------
+   FIXED JSONP CALLBACK
+------------------------- */
+
+window.rliveCallback = function(data){
+
+  if(pendingTimer){
+    clearTimeout(pendingTimer);
+    pendingTimer = null;
   }
+
+  if(pendingResolve){
+    const resolve = pendingResolve;
+
+    pendingResolve = null;
+    pendingReject = null;
+
+    resolve(data);
+  }
+
+  if(pendingScript){
+
+    const oldScript = pendingScript;
+    pendingScript = null;
+
+    setTimeout(function(){
+      try{
+        oldScript.remove();
+      }catch(e){}
+    },1000);
+
+  }
+
 };
 
-async function punch(action) {
+
+/* -------------------------
+   API CALL
+------------------------- */
+
+function apiCall(params){
+
+  return new Promise(function(resolve,reject){
+
+    if(pendingReject){
+      reject(
+        new Error(
+          "Another request is still processing."
+        )
+      );
+      return;
+    }
+
+    pendingResolve = resolve;
+    pendingReject = reject;
+
+    const parts = [];
+
+    Object.keys(params).forEach(function(key){
+
+      parts.push(
+        encodeURIComponent(key)
+        + "=" +
+        encodeURIComponent(params[key])
+      );
+
+    });
+
+    parts.push(
+      "callback=rliveCallback"
+    );
+
+    /* prevent cached response */
+    parts.push(
+      "_=" + Date.now()
+    );
+
+    const script =
+      document.createElement("script");
+
+    pendingScript = script;
+
+    script.src =
+      API + "?" + parts.join("&");
+
+    script.async = true;
+
+    document.head.appendChild(script);
+
+
+    pendingTimer = setTimeout(function(){
+
+      const rejectRequest =
+        pendingReject;
+
+      pendingResolve = null;
+      pendingReject = null;
+      pendingTimer = null;
+
+      if(pendingScript){
+
+        try{
+          pendingScript.remove();
+        }catch(e){}
+
+        pendingScript = null;
+      }
+
+      if(rejectRequest){
+
+        rejectRequest(
+          new Error(
+            "Server timeout. Please try again."
+          )
+        );
+
+      }
+
+    },30000);
+
+  });
+
+}
+
+
+/* -------------------------
+   CLOCK DISPLAY
+------------------------- */
+
+setInterval(function(){
+
+  if(
+    !el("staff")
+      .classList
+      .contains("hide")
+  ){
+
+    el("clock").textContent =
+      "Manila time · " +
+      manilaTime();
+
+  }
+
+},1000);
+
+
+/* -------------------------
+   LOGIN
+------------------------- */
+
+el("loginBtn").onclick =
+async function(){
+
+  const n =
+    el("name").value;
+
+  const p =
+    el("pin").value.trim();
+
+
+  if(!p){
+
+    el("loginMsg").className =
+      "msg bad";
+
+    el("loginMsg").textContent =
+      "Please enter your PIN.";
+
+    return;
+
+  }
+
+
+  el("loginBtn").disabled = true;
+
+  el("loginMsg").className =
+    "msg";
+
+  el("loginMsg").textContent =
+    "Checking...";
+
+
+  try{
+
+    const x =
+      await apiCall({
+        action:"login",
+        name:n,
+        pin:p
+      });
+
+
+    if(!x || !x.ok){
+
+      throw new Error(
+        (x && x.message)
+        || "Login failed."
+      );
+
+    }
+
+
+    user = n;
+    pin = p;
+
+
+    el("login")
+      .classList
+      .add("hide");
+
+
+    el("loginMsg")
+      .textContent = "";
+
+
+    if(x.role === "admin"){
+
+      el("admin")
+        .classList
+        .remove("hide");
+
+    }
+    else{
+
+      el("staff")
+        .classList
+        .remove("hide");
+
+      el("hello")
+        .textContent =
+        "Welcome, " + n;
+
+      el("clock")
+        .textContent =
+        "Manila time · " +
+        manilaTime();
+
+    }
+
+  }
+  catch(e){
+
+    el("loginMsg").className =
+      "msg bad";
+
+    el("loginMsg").textContent =
+      e.message;
+
+  }
+  finally{
+
+    el("loginBtn").disabled =
+      false;
+
+  }
+
+};
+
+
+/* -------------------------
+   CLOCK IN / OUT
+------------------------- */
+
+async function punch(action){
+
   el("inBtn").disabled = true;
   el("outBtn").disabled = true;
-  el("staffMsg").className = "msg";
-  el("staffMsg").textContent = "Saving...";
-  try {
-    var x = await apiCall({action:action, name:user, pin:pin});
-    if (!x.ok) throw new Error(x.message || "Could not save.");
-    el("staffMsg").className = "msg ok";
-    el("staffMsg").textContent = x.message + (x.time ? " " + x.time : "");
-  } catch(e) {
-    el("staffMsg").className = "msg bad";
-    el("staffMsg").textContent = e.message;
-  } finally {
-    el("inBtn").disabled = false;
-    el("outBtn").disabled = false;
+
+  el("staffMsg").className =
+    "msg";
+
+  el("staffMsg").textContent =
+    "Saving...";
+
+
+  try{
+
+    const x =
+      await apiCall({
+        action:action,
+        name:user,
+        pin:pin
+      });
+
+
+    if(!x || !x.ok){
+
+      throw new Error(
+        (x && x.message)
+        || "Could not save."
+      );
+
+    }
+
+
+    el("staffMsg").className =
+      "msg ok";
+
+
+    el("staffMsg").textContent =
+      x.message +
+      (x.time
+        ? " " + x.time
+        : "");
+
   }
+  catch(e){
+
+    el("staffMsg").className =
+      "msg bad";
+
+    el("staffMsg").textContent =
+      e.message;
+
+  }
+  finally{
+
+    el("inBtn").disabled =
+      false;
+
+    el("outBtn").disabled =
+      false;
+
+  }
+
 }
 
-el("inBtn").onclick = function() { punch("clockin"); };
-el("outBtn").onclick = function() { punch("clockout"); };
 
-function logout() {
-  user = ""; pin = "";
+el("inBtn").onclick =
+function(){
+  punch("clockin");
+};
+
+
+el("outBtn").onclick =
+function(){
+  punch("clockout");
+};
+
+
+/* -------------------------
+   LOGOUT
+------------------------- */
+
+function logout(){
+
+  user = "";
+  pin = "";
+
   el("pin").value = "";
-  el("staff").classList.add("hide");
-  el("admin").classList.add("hide");
-  el("login").classList.remove("hide");
-  el("staffMsg").textContent = "";
+
+  el("staff")
+    .classList
+    .add("hide");
+
+  el("admin")
+    .classList
+    .add("hide");
+
+  el("login")
+    .classList
+    .remove("hide");
+
+  el("staffMsg")
+    .textContent = "";
+
 }
-el("logoutBtn").onclick = logout;
-el("adminLogout").onclick = logout;
-</script>
+
+
+el("logoutBtn").onclick =
+logout;
+
+el("adminLogout").onclick =
+logout;
+
+  </script>
+
 </body>
 </html>
+  
